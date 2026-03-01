@@ -1,6 +1,5 @@
-# Build openclaw from source to avoid npm packaging gaps (some dist files are not shipped).
+# Build openclaw from source
 FROM node:22-bookworm AS openclaw-build
-# Dependencies needed for openclaw build
 RUN apt-get update \
   && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
     ca-certificates \
@@ -10,7 +9,6 @@ RUN apt-get update \
     curl \
     git \
   && rm -rf /var/lib/apt/lists/*
-# Install Bun (openclaw build uses it)
 RUN curl -fsSL https://bun.sh/install | bash
 ENV PATH="/root/.bun/bin:${PATH}"
 RUN corepack enable
@@ -42,18 +40,13 @@ RUN apt-get update \
     git \
     procps \
   && rm -rf /var/lib/apt/lists/*
-
-# Install Homebrew in runtime image as linuxbrew user
 RUN useradd -m -s /bin/bash linuxbrew && \
     echo 'linuxbrew ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
 USER linuxbrew
 RUN NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 USER root
 ENV PATH="/home/linuxbrew/.linuxbrew/bin:/home/linuxbrew/.linuxbrew/sbin:${PATH}"
-
-# Install wacli via brew
 RUN brew install wacli
-
 RUN corepack enable && corepack prepare pnpm@10.23.0 --activate
 ENV NPM_CONFIG_PREFIX=/data/npm
 ENV NPM_CONFIG_CACHE=/data/npm-cache
