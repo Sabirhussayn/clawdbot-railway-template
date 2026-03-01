@@ -32,7 +32,8 @@ RUN apt-get update \
     ca-certificates tini python3 python3-venv \
   && rm -rf /var/lib/apt/lists/*
 # Copy only wacli binary from wacli-build stage
-COPY --from=wacli-build /home/linuxbrew/.linuxbrew/bin/wacli /usr/local/bin/wacli
+COPY --from=wacli-build /home/linuxbrew/.linuxbrew/Cellar/wacli/0.2.0/bin/wacli /usr/local/bin/wacli
+RUN chmod +x /usr/local/bin/wacli
 RUN corepack enable && corepack prepare pnpm@10.23.0 --activate
 ENV NPM_CONFIG_PREFIX=/data/npm
 ENV NPM_CONFIG_CACHE=/data/npm-cache
