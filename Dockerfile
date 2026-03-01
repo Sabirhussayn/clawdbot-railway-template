@@ -45,7 +45,8 @@ RUN useradd -m -s /bin/bash linuxbrew && \
 USER linuxbrew
 RUN NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 ENV PATH="/home/linuxbrew/.linuxbrew/bin:/home/linuxbrew/.linuxbrew/sbin:${PATH}"
-RUN sudo -u linuxbrew /home/linuxbrew/.linuxbrew/bin/brew install wacli
+USER linuxbrew
+RUN /home/linuxbrew/.linuxbrew/bin/brew install wacli
 USER root
 RUN corepack enable && corepack prepare pnpm@10.23.0 --activate
 ENV NPM_CONFIG_PREFIX=/data/npm
