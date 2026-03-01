@@ -20,19 +20,23 @@ RUN pnpm build
 ENV OPENCLAW_PREFER_PNPM=1
 RUN pnpm ui:install && pnpm ui:build
 
-# Build wacli binary in separate stage
-FROM homebrew/brew AS wacli-build
-RUN brew tap steipete/tap && brew install steipete/tap/wacli
+# Build wacli from Go source
+FROM golang:1.22-bookworm AS wacli-build
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    gcc libc6-dev libsqlite3-dev git \
+    && rm -rf /var/lib/apt/lists/*
+RUN git clone --depth 1 --branch v0.2.0 https://github.com/steipete/wacli.git /wacli
+WORKDIR /wacli
+RUN CGO_ENABLED=1 go build -tags sqlite_fts5 -ldflags="-s -w -X main.version=0.2.0" -o /usr/local/bin/wacli ./cmd/wacli
 
 # Runtime image
 FROM node:22-bookworm
 ENV NODE_ENV=production
 RUN apt-get update \
   && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
-    ca-certificates tini python3 python3-venv \
+    ca-certificates tini python3 python3-venv libsqlite3-0 \
   && rm -rf /var/lib/apt/lists/*
-# Copy only wacli binary from wacli-build stage
-COPY --from=wacli-build /home/linuxbrew/.linuxbrew/Cellar/wacli/0.2.0/bin/wacli /usr/local/bin/wacli
+COPY --from=wacli-build /usr/local/bin/wacli /usr/local/bin/wacli
 RUN chmod +x /usr/local/bin/wacli
 RUN corepack enable && corepack prepare pnpm@10.23.0 --activate
 ENV NPM_CONFIG_PREFIX=/data/npm
