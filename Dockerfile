@@ -21,7 +21,7 @@ ENV OPENCLAW_PREFER_PNPM=1
 RUN pnpm ui:install && pnpm ui:build
 
 # Build wacli from Go source
-FROM golang:1.22-bookworm AS wacli-build
+FROM golang:1.25-bookworm AS wacli-build
 RUN apt-get update && apt-get install -y --no-install-recommends \
     gcc libc6-dev libsqlite3-dev git \
     && rm -rf /var/lib/apt/lists/*
